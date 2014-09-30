@@ -18,9 +18,9 @@
 
 (defn register-page []
   (layout/common
+    [:h1 "Register"]
     (form-to
       [:post "/register"]
-      [:h1 "Register"]
       (form-item text-field     :id    "Username")
       (form-item password-field :pass  "Password")
       (form-item password-field :pass1 "Confirm pass")
@@ -31,6 +31,15 @@
 
 
 (defn login-page []
+  (layout/common
+    [:h1 "Login"]
+    (form-to
+      [:post "/login"]
+      (form-item text-field :id "Username")
+      (form-item password-field :pass "Password")
+      (submit-button "Login")
+    )
+  )
 );;login-page
 
 (defn handle-login []
@@ -40,6 +49,24 @@
 );;login-page
 
 (defroutes auth-routes
+  (GET  "/login" [_] (login-page))
+  (POST "/login" [id pass]
+    (cond
+      (empty? id)
+      (login-page "Please enter username")
+
+      (empty? pass)
+      (login-page "Please enter password")
+
+      :else
+      (do
+        (session/put! :user id)
+        (redirect "/")
+      )
+
+    )
+  );;/post/login
+
   (GET  "/register" [_] (register-page))
   (POST "/register" [id pass pass1]
     (cond
@@ -58,8 +85,7 @@
       :else
       (do
         (db/save-user id pass)
-        (session/put! :user id)
-        (redirect "/")
+        (redirect "/login")
       )
     );;cond
   );;POST
