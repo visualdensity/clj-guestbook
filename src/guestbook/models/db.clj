@@ -72,3 +72,14 @@
     )
   )
 )
+
+(defn read-user [user]
+  (sql/with-connection
+    db
+    (sql/with-query-results res
+      ["SELECT * FROM user WHERE user=?" user]
+      (first res)
+    )
+  )
+)
+
