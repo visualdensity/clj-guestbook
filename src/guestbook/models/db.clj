@@ -61,3 +61,14 @@
     )
   )
 )
+
+(defn save-user [user pass]
+  (sql/with-connection
+    db
+    (sql/insert-values
+      :user
+      [:user :pass :timestamp]
+      [user pass (new java.util.Date)]
+    )
+  )
+)
