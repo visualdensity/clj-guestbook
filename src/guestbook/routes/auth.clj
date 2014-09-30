@@ -5,6 +5,7 @@
             [hiccup.form :refer :all]
             [noir.session :as session]
             [noir.response :refer [redirect]]
+            [noir.util.crypt :as crypt]
   );;require
 )
 
@@ -16,9 +17,10 @@
   );;list
 );;form-item
 
-(defn register-page []
+(defn register-page [& [error]]
   (layout/common
     [:h1 "Register"]
+    [:p.error error]
     (form-to
       [:post "/register"]
       (form-item text-field     :id    "Username")
@@ -30,9 +32,10 @@
 );;register-page
 
 
-(defn login-page []
+(defn login-page [& [error]]
   (layout/common
     [:h1 "Login"]
+    [:p.error error]
     (form-to
       [:post "/login"]
       (form-item text-field :id "Username")
@@ -42,52 +45,53 @@
   )
 );;login-page
 
-(defn handle-login []
+
+(defn handle-login [id pass]
+  (cond
+    (empty? id)
+    (login-page "Please enter username")
+
+    (empty? pass)
+    (login-page "Please enter password")
+
+    :else
+    (do
+      (session/put! :user id)
+      (redirect "/")
+    )
+  );;cond
 );;login-page
 
-(defn handle-register []
+
+(defn handle-register [id pass pass1]
+  (cond
+    (empty? id)
+    (register-page "Please enter a username")
+
+    (empty? pass)
+    (register-page "Please enter a password")
+
+    (empty? pass1)
+    (register-page "Please confirm password")
+
+    (not= pass pass1)
+    (register-page "Make sure password same same")
+
+    :else
+    (do
+      (db/save-user id (crypt/encrypt pass))
+      (redirect "/login")
+    )
+  );;cond
 );;login-page
+
 
 (defroutes auth-routes
+
   (GET  "/login" [_] (login-page))
-  (POST "/login" [id pass]
-    (cond
-      (empty? id)
-      (login-page "Please enter username")
-
-      (empty? pass)
-      (login-page "Please enter password")
-
-      :else
-      (do
-        (session/put! :user id)
-        (redirect "/")
-      )
-
-    )
-  );;/post/login
+  (POST "/login" [id pass] (handle-login))
 
   (GET  "/register" [_] (register-page))
-  (POST "/register" [id pass pass1]
-    (cond
-      (empty? id)
-      (register-page "Please enter a username")
-
-      (empty? pass)
-      (register-page "Please enter a password")
-
-      (empty? pass1)
-      (register-page "Please confirm password")
-
-      (not= pass pass1)
-      (register-page "Make sure password same same")
-
-      :else
-      (do
-        (db/save-user id pass)
-        (redirect "/login")
-      )
-    );;cond
-  );;POST
+  (POST "/register" [id pass pass1] (handle-register))
 
 );;defroutes

@@ -1,5 +1,7 @@
 (ns guestbook.models.db
-  (:require [clojure.java.jdbc :as sql])
+  (:require 
+    [clojure.java.jdbc :as sql]
+  )
   (:import java.sql.DriverManager)
 )
 
@@ -31,14 +33,23 @@
       :user
       [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
       [:timestamp "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]
-      [:user "TEXT"]
-      [:pass "TEXT"]
+      [:user "VARCHAR(100)"]
+      [:pass "VARCHAR(100)"]
     )
 
-    (sql/do-commands "CREATE INDEX user_index ON user (user)")
+    (sql/do-commands "CREATE INDEX username_index ON user (user)")
   )
-)
+);;create-user-table
 
+
+(defn drop-user-table []
+  (sql/with-connection
+    db
+    (sql/drop-table
+      :user
+    )
+  )
+);;drop-user-table
 
 (defn read-guests []
   (sql/with-connection
