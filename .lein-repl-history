@@ -26,3 +26,13 @@ use ('guestbook.models.db)
 (use 'guestbook.models.db)
 (drop-user-table)
 (create-user-table)
+(= 1 1)
+(not (= 1 1))
+(not (= 1 2))
+(use 'guestbook.models.db)
+(read-user "wicked")
+let(
+ [user (read-user "wicked")
+ [user (read-user "wicked")]
+user
+(:pass user)

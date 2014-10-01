@@ -8,6 +8,8 @@
             [noir.session :as session]
             [ring.middleware.session.memory :refer [memory-store]]
 
+            [noir.validation :refer [wrap-noir-validation]]
+
             [compojure.handler :as handler]
             [compojure.route :as route]
 
@@ -42,8 +44,12 @@
         )
       );;handler/site
 
+      (wrap-base-url)
+
       (session/wrap-noir-session
         {:store (memory-store)}
       );;session
+
+      (wrap-noir-validation)
   )
 );;app

@@ -6,6 +6,7 @@
             [noir.session :as session]
             [noir.response :refer [redirect]]
             [noir.util.crypt :as crypt]
+            [noir.validation :refer [rule errors? has-value? on-error]]
   );;require
 )
 
@@ -16,6 +17,7 @@
     [:br]
   );;list
 );;form-item
+
 
 (defn register-page [& [error]]
   (layout/common
@@ -52,13 +54,23 @@
     (login-page "Please enter username")
 
     (empty? pass)
-    (login-page "Please enter password")
+    (login-page "Please enter pass")
 
     :else
-    (do
-      (session/put! :user id)
-      (redirect "/")
-    )
+    (let
+      [user (db/read-user id)]
+
+      (cond
+        (not (crypt/compare pass (:pass user)) )
+        (login-page "Invalid user pass")
+
+        :else
+        (do
+          (session/put! :user id)
+          (redirect "/")
+        )
+      );;cond
+    );;let
   );;cond
 );;login-page
 
@@ -89,7 +101,7 @@
 (defroutes auth-routes
 
   (GET  "/login" [_] (login-page))
-  (POST "/login" [id pass] (handle-login))
+  (POST "/login" [id pass] (handle-login id pass))
 
   (GET  "/register" [_] (register-page))
   (POST "/register" [id pass pass1] (handle-register))
